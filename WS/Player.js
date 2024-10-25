@@ -1,27 +1,31 @@
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
-var Player = function(u, n, s) {
-	var uid = u,
-		status = s,
-		sockid,
-		socket,
-		mode,
-		name = n,
-		opp;
-
-	// Define which variables and methods can be accessed
-	return {
-		uid: uid,
-		status: status,
-		sockid: sockid,
-		socket: socket,
-		mode: mode,
-		name: name,
-		opp: opp
+class Player {
+	constructor(name, socket) {
+		this.uid = _generateUID();
+		this.status = 'looking';
+		this.sockid = socket.id;
+		this.socket = socket;
+		this.mode = null;
+		this.name = name;
+		this.opp = null;
 	}
-};
 
-// Export the Player class so you can use it in
-// other files by using require("Player").Player
+	get status() {
+		return this.status;
+	}
+
+	set status(s) {
+		if (s === 'looking' || s === 'paired' || s === 'playing')
+			this.status = s;
+		else
+			throw new Error("Invalid status");
+	}
+
+	_generateUID = () => {
+		return parseInt(Math.ceil(Math.random() * Date.now()).toPrecision(16).toString().replace(".", ""));
+	}
+}
+
 exports.Player = Player;
