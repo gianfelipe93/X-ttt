@@ -1,41 +1,46 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
+import Button from '../../components/Button'
 
 export default class SetName extends Component {
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
-		this.state = {}
+		this.state = {
+			name: ''
+		}
+
+		this.onNameTyped = this.onNameTyped.bind(this)
 	}
 
-//	------------------------	------------------------	------------------------
+	onNameTyped(e) {
+		this.setState({
+			...this.state,
+			name: e.target.value
+		})
+	}
 
-	render () {
+	//	------------------------	------------------------	------------------------
+
+	render() {
 		return (
 			<div id='SetName'>
-
 				<h1>Set Name</h1>
-
 				<div ref='nameHolder' className='input_holder left'>
 					<label>Name </label>
-					<input ref='name' type='text' className='input name' placeholder='Name' />
+					<input onChange={this.onNameTyped} type='text' className='input name' placeholder='Name' />
 				</div>
-
-
-				<button type='submit' onClick={this.saveName.bind(this)} className='button'><span>SAVE <span className='fa fa-caret-right'></span></span></button>
-
+				<Button onClick={this.saveName} text='SAVE' />
 			</div>
 		)
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
-	saveName (e) {
-		// const { name } = this.refs
-		// const { onSetName } = this.props
-		// onSetName(name.value.trim())
+	saveName() {
+		const { name } = this.state
+		const { onSetName } = this.props
 
-		this.props.onSetName(this.refs.name.value.trim())
+		onSetName(name)
 	}
-
 }
