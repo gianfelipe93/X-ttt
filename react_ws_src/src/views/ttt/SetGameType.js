@@ -1,49 +1,28 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
+import Button from '../../components/Button'
 
 export default class SetGameType extends Component {
-
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		this.state = {}
 	}
 
-//	------------------------	------------------------	------------------------
-
-	render () {
+	render() {
+		const { onSetType } = this.props
 		return (
 			<div id='SetGameType'>
 
 				<h1>Choose game type</h1>
 
-				<button type='submit' onClick={this.selTypeLive.bind(this)} className='button long'><span>Live against another player <span className='fa fa-caret-right'></span></span></button>
-				
+				<Button onClick={() => onSetType('live')} text='Live against another player' />
+
 				&nbsp;&nbsp;&nbsp;&nbsp;
 
-				<button type='submit' onClick={this.selTypeComp.bind(this)} className='button long'><span>Against a computer <span className='fa fa-caret-right'></span></span></button>
+				<Button onClick={() => onSetType('comp')} text='Against a computer' />
 
 			</div>
 		)
 	}
-
-//	------------------------	------------------------	------------------------
-
-	selTypeLive (e) {
-		// const { name } = this.refs
-		// const { onSetType } = this.props
-		// onSetType(name.value.trim())
-
-		this.props.onSetType('live')
-	}
-
-//	------------------------	------------------------	------------------------
-
-	selTypeComp (e) {
-		// const { name } = this.refs
-		// const { onSetType } = this.props
-		// onSetType(name.value.trim())
-
-		this.props.onSetType('comp')
-	}
-
 }
+
