@@ -1,10 +1,12 @@
+const { STATUSES } = require("./util/constants");
+
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
 class Player {
 	constructor(name, socket) {
 		this.uid = _generateUID();
-		this.status = 'looking';
+		this.status = STATUSES.LOOKING;
 		this.sockid = socket.id;
 		this.socket = socket;
 		this.mode = null;
@@ -17,7 +19,7 @@ class Player {
 	}
 
 	set status(s) {
-		if (s === 'looking' || s === 'paired' || s === 'playing')
+		if (s === STATUSES.LOOKING || s === STATUSES.PAIRED)
 			this.status = s;
 		else
 			throw new Error("Invalid status");
