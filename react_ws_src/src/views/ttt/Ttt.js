@@ -1,100 +1,100 @@
-import React, { Component} from 'react'
+import React, { Component } from 'react'
 import { Link } from 'react-router'
 
-import SetName from './SetName'
 import SetGameType from './SetGameType'
 
 import GameMain from './GameMain'
+import { GAME_STEPS } from '../../util/constants'
 
 export default class Ttt extends Component {
-
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		this.state = {
-			game_step: this.set_game_step()
+			game_step: this.set_game_step(),
+			username: app.settings.curr_user.name,
+			game_type: null
+		}
+
+		this.saveUserName = this.saveUserName.bind(this)
+		this.saveGameType = this.saveGameType.bind(this)
+		this.gameEnd = this.gameEnd.bind(this)
+	}
+
+	componentDidUpdate(_, prevState) {
+		if (prevState.game_step !== this.state.game_step || prevState.username !== this.state.username) {
+			this.upd_game_step()
 		}
 	}
 
-//	------------------------	------------------------	------------------------
+	renderGameComponent = () => {
+		if (game_step === GAME_STEPS.SET_GAME_TYPE) {
+			return <SetGameType onSetType={this.saveGameType} />
+		} else if (game_step === GAME_STEPS.START_GAME) {
+			return <GameMain game_type={this.state.game_type} onEndGame={this.gameEnd} />
+		} else {
+			return null
+		}
+	}
 
-	render () {
-
-		const {game_step} = this.state
-
-		console.log(game_step)
+	render() {
+		const { game_step } = this.state
 
 		return (
 			<section id='TTT_game'>
 				<div id='page-container'>
-					{game_step == 'set_name' && <SetName 
-														onSetName={this.saveUserName.bind(this)} 
-												/>}
+					<Header game_step={game_step} userName={app.settings.curr_user.name} saveUserName={this.saveUserName} />
 
-					{game_step != 'set_name' && 
-						<div>
-							<h2>Welcome, {app.settings.curr_user.name}</h2>
-						</div>
-					}
-
-					{game_step == 'set_game_type' && <SetGameType 
-														onSetType={this.saveGameType.bind(this)} 
-													/>}
-					{game_step == 'start_game' && <GameMain 
-														game_type={this.state.game_type}
-														onEndGame={this.gameEnd.bind(this)} 
-													/>}
-
+					{this.renderGameComponent()}
 				</div>
 			</section>
 		)
 	}
 
-//	------------------------	------------------------	------------------------
-
-	saveUserName (n) {
-		app.settings.curr_user = {}
-		app.settings.curr_user.name = n
-
-		this.upd_game_step()
-	}
-
-//	------------------------	------------------------	------------------------
-
-	saveGameType (t) {
-		this.state.game_type = t
-
-		this.upd_game_step()
-	}
-
-//	------------------------	------------------------	------------------------
-
-	gameEnd (t) {
-		this.state.game_type = null
-
-		this.upd_game_step()
-	}
-
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
-
-	upd_game_step () {
-
+	updateState = (key, value) => {
 		this.setState({
-			game_step: this.set_game_step()
+			...this.state,
+			[key]: value
 		})
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
-	set_game_step () {
+	saveUserName(name) {
+		app.settings.curr_user = {}
+		app.settings.curr_user.name = name
 
+		updateState('username', name)
+	}
+
+	//	------------------------	------------------------	------------------------
+
+	saveGameType(type) {
+		updateState('game_type', type)
+	}
+
+	//	------------------------	------------------------	------------------------
+
+	gameEnd() {
+		updateState('game_type', null)
+	}
+
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+
+	upd_game_step() {
+		updateState('game_step', this.set_game_step())
+	}
+
+	//	------------------------	------------------------	------------------------
+
+	set_game_step() {
 		if (!app.settings.curr_user || !app.settings.curr_user.name)
-			return 'set_name'
+			return GAME_STEPS.SET_NAME
 		else if (!this.state.game_type)
-			return 'set_game_type'
+			return GAME_STEPS.SET_GAME_TYPE
 		else
-			return 'start_game'
+			return GAME_STEPS.START_GAME
 	}
 
 }
@@ -106,5 +106,5 @@ Ttt.propTypes = {
 }
 
 Ttt.contextTypes = {
-  router: React.PropTypes.object.isRequired
+	router: React.PropTypes.object.isRequired
 }
