@@ -1,12 +1,14 @@
 // Setup basic express server
 var express = require('express');
 const { Game } = require('./XtttGame.js');
+const { Chat } = require('./Chat.js');
 var app = express();
 var server = require('http').createServer(app);
 const io = require('socket.io')(server);
 
 util = require("util");							// Utility resources (logging, object inspection, etc)
 const game = new Game(io);
+const chat = new Chat(io);
 
 var port = process.env.PORT || 3001;
 
@@ -15,4 +17,7 @@ server.listen(port, function () {
 });
 
 app.use(express.static(__dirname + '/public'));
-io.on('connection', (socket) => game.listen(socket));
+io.on('connection', (socket) => {
+	game.listen(socket)
+	chat.listen(socket)
+});

@@ -13,7 +13,9 @@
 ////////////////////////////////////////////////////////////////////// SITEWIDE STYLES
 @import '_mixins.scss'; // MIXINS
 @import '_layout.scss'; // LAYOUT SPECIFIC
-html,body {
+
+html,
+body {
 	font-family: $bodyFont;
 	background-color: $colorPrimary;
 	// background-image: url(../../static/images/team-coach-bg.jpg);
@@ -23,50 +25,60 @@ html,body {
 	background-size: cover !important;
 	background-position: center center !important;
 	background-repeat: no-repeat !important;
-	background-attachment:fixed;
+	background-attachment: fixed;
 	// width:100%;
 	// height:100%;
 	position: relative;
 }
+
 /* apply a natural box layout model to all elements, but allowing components to change */
 html {
-  box-sizing: border-box;
+	box-sizing: border-box;
 }
-*, *:before, *:after {
-  box-sizing: inherit;
+
+*,
+*:before,
+*:after {
+	box-sizing: inherit;
 }
+
 input:focus,
 select:focus,
 textarea:focus,
 button:focus {
-    outline: none;
+	outline: none;
 }
 
 // add selectors here and they will perform subtle animation on resize
-header, img.active, #simple_popup a.close {
+header,
+img.active,
+#simple_popup a.close {
 	@include transition(.3s ease-in-out)
 }
+
 .no-interfere {
 	@include transition(none)
 }
+
 a {
 	text-decoration: none;
-	cursor:pointer;
+	cursor: pointer;
 }
 
-#overlay{
-	width:100%;
-	height:100%;
-	position:fixed;
-	top:50px;
-	left:0;
-	background:rgba(0,0,0,.5);
-	z-index:1;
-	display:none;
+#overlay {
+	width: 100%;
+	height: 100%;
+	position: fixed;
+	top: 50px;
+	left: 0;
+	background: rgba(0, 0, 0, .5);
+	z-index: 1;
+	display: none;
 	//@include transition(all 400ms cubic-bezier(0.175, 0.885, 0.320, 1.275));
 }
-#overlay.show{
-	display:block;
+
+#overlay.show {
+	display: block;
 	//@include transition(all 400ms cubic-bezier(0.175, 0.885, 0.320, 1.275));
 }
 
@@ -79,7 +91,7 @@ a {
 ////////////////////////////////////////////////////////////////////// MAIN CONTENT
 section#main_content {
 	position: relative;
-	height:100%;
+	height: 100%;
 }
 
 ////////////////////////////////////////////////////////////////////// FOOTER
@@ -90,4 +102,4 @@ section#main_content {
 
 ////////////////////////////////////////////////////////////////////// GAME
 @import 'ttt.scss';
-
+@import 'gameMain.scss';

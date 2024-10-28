@@ -54,6 +54,8 @@ class Game {
 
 	onTurn(data) {
 		const opp = this.players.find(p => p.uid !== data.currentUid)
+		console.log({ data, players: this.players, opp })
+
 		opp.socket.emit("opp_turn", { cell_id: data.cell_id });
 	};
 
