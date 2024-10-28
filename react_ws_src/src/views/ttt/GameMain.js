@@ -10,6 +10,7 @@ import gameBoardTdConstructor from './GameBoardTd'
 import Button from '../../components/Button'
 import { clone } from 'lodash'
 import useCurrentUser from '../../hooks/useCurrentUser'
+import Chat from '../chat/Chat'
 
 export default class SetName extends Component {
 	constructor(props) {
@@ -242,43 +243,46 @@ export default class SetName extends Component {
 	}
 
 	render() {
-		const { cell_vals, game_play, game_stat, winningSet } = this.state
+		const { cell_vals, game_play, game_stat, winningSet, currentUid } = this.state
 		const { game_type } = this.props
 		const turnText = this.state.next_turn_ply ? 'Your turn' : 'Opponent turn'
 		const GameBoardTd = gameBoardTdConstructor(this.click_cell, winningSet)
 
 		return (
-			<div id='GameMain'>
-				<h1>Play {game_type}</h1>
-				<div id="game_stat">
-					<div id="game_stat_msg">{game_stat}</div>
-					{game_play && <div id="game_turn_msg">{turnText}</div>}
+			<div className='gameMainContainer'>
+				<div id='GameMain'>
+					<h1>Play {game_type}</h1>
+					<div id="game_stat">
+						<div id="game_stat_msg">{game_stat}</div>
+						{game_play && <div id="game_turn_msg">{turnText}</div>}
+					</div>
+					<div id="game_board">
+						<table>
+							<tbody>
+								<tr>
+									<GameBoardTd index="1" typeOfCell={cell_vals['c1']} />
+									<GameBoardTd index="2" typeOfCell={cell_vals['c2']} className="vbrd" />
+									<GameBoardTd index="3" typeOfCell={cell_vals['c3']} />
+								</tr>
+								<tr>
+									<GameBoardTd index="4" typeOfCell={cell_vals['c4']} className="hbrd" />
+									<GameBoardTd index="5" typeOfCell={cell_vals['c5']} className="vbrd hbrd" />
+									<GameBoardTd index="6" typeOfCell={cell_vals['c6']} className="hbrd" />
+								</tr>
+								<tr>
+									<GameBoardTd index="7" typeOfCell={cell_vals['c7']} />
+									<GameBoardTd index="8" typeOfCell={cell_vals['c8']} className="vbrd" />
+									<GameBoardTd index="9" typeOfCell={cell_vals['c9']} />
+								</tr>
+							</tbody>
+						</table>
+					</div>
+					<div className='buttonContainer'>
+						<Button onClick={this.end_game} text='End Game' className="button short" />
+						<Button onClick={this.restartMatch} text='Restart' className="button short" />
+					</div>
 				</div>
-				<div id="game_board">
-					<table>
-						<tbody>
-							<tr>
-								<GameBoardTd index="1" typeOfCell={cell_vals['c1']} />
-								<GameBoardTd index="2" typeOfCell={cell_vals['c2']} className="vbrd" />
-								<GameBoardTd index="3" typeOfCell={cell_vals['c3']} />
-							</tr>
-							<tr>
-								<GameBoardTd index="4" typeOfCell={cell_vals['c4']} className="hbrd" />
-								<GameBoardTd index="5" typeOfCell={cell_vals['c5']} className="vbrd hbrd" />
-								<GameBoardTd index="6" typeOfCell={cell_vals['c6']} className="hbrd" />
-							</tr>
-							<tr>
-								<GameBoardTd index="7" typeOfCell={cell_vals['c7']} />
-								<GameBoardTd index="8" typeOfCell={cell_vals['c8']} className="vbrd" />
-								<GameBoardTd index="9" typeOfCell={cell_vals['c9']} />
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<div className='buttonContainer'>
-					<Button onClick={this.end_game} text='End Game' className="button short" />
-					<Button onClick={this.restartMatch} text='Restart' className="button short" />
-				</div>
+				{currentUid && <Chat currentUid={currentUid} socket={this.socket} />}
 			</div>
 		)
 	}
