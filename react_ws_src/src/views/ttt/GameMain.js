@@ -11,6 +11,7 @@ import Button from '../../components/Button'
 import { clone } from 'lodash'
 import useCurrentUser from '../../hooks/useCurrentUser'
 import Chat from '../chat/Chat'
+import useSocket from '../../hooks/useSocket'
 
 export default class SetName extends Component {
 	constructor(props) {
@@ -57,8 +58,6 @@ export default class SetName extends Component {
 		this.resetBoard = this.resetBoard.bind(this)
 	}
 
-
-
 	componentDidMount() {
 		// eslint-disable-next-line no-undef
 		TweenMax.from('#game_stat', 1, { display: 'none', opacity: 0, scaleX: 0, scaleY: 0, ease: Power4.easeIn })
@@ -68,14 +67,14 @@ export default class SetName extends Component {
 
 	sock_start() {
 		const { name } = useCurrentUser(['name'])
-		// eslint-disable-next-line no-undef
-		this.socket = io(app.settings.ws_conf.loc.SOCKET__io.u);
 
-		this.socket.on('connect', function () {
-			this.socket.emit('new player', { name });
-		}.bind(this));
+		const OnConnect = function (socket) {
+			alert('new player')
+			socket.emit('new player', { name });
+		}.bind(this)
 
-		this.socket.on('pair_players', function (data) {
+		const onPaired = function (data) {
+			alert('onPaired')
 			this.setState({
 				next_turn_ply: data.mode === 'm',
 				game_play: true,
@@ -83,10 +82,14 @@ export default class SetName extends Component {
 				currentUid: data.uid,
 				mode: data.mode
 			})
-		}.bind(this));
+		}.bind(this)
 
-		this.socket.on('opp_turn', this.turn_opp_live.bind(this));
-		this.socket.on('restart', this.resetBoard.bind(this));
+		const onOppTurn = this.turn_opp_live.bind(this)
+		const onRestart = this.resetBoard.bind(this)
+		const onEndGame = () => window.location = '/ttt'
+
+		// eslint-disable-next-line no-undef
+		this.socket = useSocket(app.settings.ws_conf.loc.SOCKET__io.u, OnConnect, onPaired, onOppTurn, onRestart, onEndGame)
 	}
 
 	resetBoard() {
@@ -213,7 +216,7 @@ export default class SetName extends Component {
 				winningSet: set
 			})
 
-			this.end_game()
+			this.socket && this.socket.disconnect();
 
 		} else {
 			for (let i = 1; i <= 9; i++)
@@ -225,7 +228,7 @@ export default class SetName extends Component {
 					game_play: false
 				})
 
-				this.end_game()
+				this.socket && this.socket.disconnect();
 
 			} else {
 				game_type != 'live' && next_turn_ply && setTimeout(this.turn_comp.bind(this), rand_to_fro(500, 1000));
@@ -238,8 +241,10 @@ export default class SetName extends Component {
 	}
 
 	end_game() {
-		this.socket && this.socket.disconnect();
+		const { currentUid } = this.state
+
 		this.props.onEndGame()
+		this.socket.emit('endGame', { currentUid })
 	}
 
 	render() {

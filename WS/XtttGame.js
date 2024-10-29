@@ -1,5 +1,5 @@
 const { Player } = require("./Player");
-
+const { get } = require("lodash");
 class Game {
 	constructor(io) {
 		this.player = null
@@ -11,6 +11,11 @@ class Game {
 		this.onNewPlayer = this.onNewPlayer.bind(this);
 		this.onTurn = this.onTurn.bind(this);
 		this.onClientDisconnect = this.onClientDisconnect.bind(this);
+		this._getOpponent = this._getOpponent.bind(this);
+	}
+
+	_getOpponent(currentPlayerUid) {
+		return this.players.find(p => p.uid !== currentPlayerUid);
 	}
 
 	_addPlayerToGame(name) {
@@ -53,28 +58,34 @@ class Game {
 	}
 
 	onTurn(data) {
-		const opp = this.players.find(p => p.uid !== data.currentUid)
-		console.log({ data, players: this.players, opp })
+		const opp = this._getOpponent(data.currentUid)
 
 		opp.socket.emit("opp_turn", { cell_id: data.cell_id });
 	};
 
 	onClientDisconnect() {
-		var removePlayer = this.player.uid;
-		this.players.splice(this.players.indexOf(removePlayer), 1);
-		this.players_avail.splice(this.players_avail.indexOf(removePlayer), 1);
+		var removePlayer = get(this, "player.uid", null);
 
-		if (this.status == "admin") {
-			util.log("Admin has disconnected: " + this.uid);
-		} else {
-			util.log("Player has disconnected: " + this.id);
+		if (removePlayer !== null) {
+			this.players.splice(this.players.indexOf(removePlayer), 1);
+			this.players_avail.splice(this.players_avail.indexOf(removePlayer), 1);
+
+			if (this.status == "admin") {
+				util.log("Admin has disconnected: " + this.uid);
+			} else {
+				util.log("Player has disconnected: " + this.id);
+			}
 		}
 	}
 
 	onRestart(data) {
-		console.log({ data, players: this.players })
-		const opp = this.players.find(p => p.uid !== data.currentUid)
+		const opp = this._getOpponent(data.currentUid)
 		opp.socket.emit("restart", {});
+	}
+
+	onEndGame(data) {
+		const opp = this._getOpponent(data.currentUid)
+		opp.socket.emit("endGame", {});
 	}
 
 	listen(socket) {
@@ -84,7 +95,7 @@ class Game {
 		socket.on("ply_turn", (data) => this.onTurn(data));
 		socket.on("restart", (data) => this.onRestart(data));
 		socket.on("disconnect", () => this.onClientDisconnect());
-
+		socket.on("endGame", (data) => this.onEndGame(data));
 	}
 }
 

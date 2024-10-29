@@ -79,6 +79,7 @@ export default class Ttt extends Component {
 
 	gameEnd() {
 		this.updateState('game_type', null)
+		window.location = '/ttt'
 	}
 
 	//	------------------------	------------------------	------------------------
