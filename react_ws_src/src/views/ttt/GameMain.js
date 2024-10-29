@@ -1,9 +1,5 @@
 import React, { Component } from 'react'
-
-import io from 'socket.io-client'
-
 import TweenMax from 'gsap'
-
 import rand_arr_elem from '../../helpers/rand_arr_elem'
 import rand_to_fro from '../../helpers/rand_to_fro'
 import gameBoardTdConstructor from './GameBoardTd'
