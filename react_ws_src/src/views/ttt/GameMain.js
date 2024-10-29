@@ -65,12 +65,10 @@ export default class SetName extends Component {
 		const { name } = useCurrentUser(['name'])
 
 		const OnConnect = function (socket) {
-			alert('new player')
 			socket.emit('new player', { name });
 		}.bind(this)
 
 		const onPaired = function (data) {
-			alert('onPaired')
 			this.setState({
 				next_turn_ply: data.mode === 'm',
 				game_play: true,
