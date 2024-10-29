@@ -1,14 +1,15 @@
-import React, {Component} from 'react'
+import React, { Component } from 'react'
 import superagent from 'superagent'
 
 import PopUp from '../layouts/PopUp'
 import validator from 'validator'
-import objectAssign from 'object-assign'
-import serialize_params from '../../helpers/serialize_params'
+import Button from '../../components/Button'
+import FieldHolder from '../../components/FieldHolder'
+import useCurrentUser from '../../hooks/useCurrentUser'
 
 export default class Contact extends Component {
 
-	constructor (props) {
+	constructor(props) {
 		super(props)
 		this.state = {
 			unsent: true,
@@ -19,11 +20,27 @@ export default class Contact extends Component {
 			nameValid: true,
 			emailValid: true,
 			subjectValid: true,
-			messageValid: true
+			messageValid: true,
+			formData: {
+				name: '',
+				email: '',
+				subject: '',
+				message: ''
+			}
 		}
+
+		this.handleChange = this.handleChange.bind(this)
+		this.checkOnBlurr = this.checkOnBlurr.bind(this)
 	}
 
-	render () {
+	handleChange(event) {
+		let tempState = this.state
+		tempState.formData[event.target.name] = event.target.value
+
+		this.setState(tempState);
+	}
+
+	render() {
 		const { nameValid, emailValid, subjectValid, messageValid } = this.state
 
 		const sendingCopy = (
@@ -40,20 +57,19 @@ export default class Contact extends Component {
 
 		const form = (
 			<form id='contact_form'>
-
 				<FieldHolder ref='nameHolder' goodClasses='input_holder left' badClass='error' isValid={nameValid}>
 					<label>Name <span className='required'>is a required field</span></label>
-					<input ref='name' type='text' className='input name' placeholder='Name' onBlur={this.checkOnBlurr.bind(this)} />
+					<input name='name' onChange={this.handleChange} type='text' className='input name' placeholder='Name' onBlur={this.checkOnBlurr} />
 				</FieldHolder>
 
 				<FieldHolder ref='emailHolder' goodClasses='input_holder left' badClass='error' isValid={emailValid}>
 					<label>Email <span className='required'>is a required field</span></label>
-					<input ref='email' type='email' className='input name' placeholder='Your Email' onBlur={this.checkOnBlurr.bind(this)} />
+					<input name='email' onChange={this.handleChange} type='email' className='input name' placeholder='Your Email' onBlur={this.checkOnBlurr} />
 				</FieldHolder>
 
 				<FieldHolder ref='subjectHolder' goodClasses='input_holder select_option' badClass='error' isValid={subjectValid}>
 					<label>Subject <span className='required'>is a required field</span></label>
-					<select ref='subject' onChange={this.checkOnBlurr.bind(this)}>
+					<select name='subject' onChange={this.handleChange} onBlur={this.checkOnBlurr}>
 						<option value=''>Choose one</option>
 						<option>Join / Login</option>
 						<option>An issue with the website</option>
@@ -63,10 +79,10 @@ export default class Contact extends Component {
 
 				<FieldHolder ref='messageHolder' goodClasses='input_holder clear message' badClass='error' isValid={messageValid}>
 					<label>Message <span className='required'>is a required field</span></label>
-					<textarea ref='message' className='input textarea' onBlur={this.checkOnBlurr.bind(this)}></textarea>
+					<textarea name='message' className='input textarea' onChange={this.handleChange} onBlur={this.checkOnBlurr}></textarea>
 				</FieldHolder>
 
-				<button type='submit' onClick={this.sendMessage.bind(this)} className='button'><span>SEND <span className='fa fa-caret-right'></span></span></button>
+				<Button onClick={this.sendMessage.bind(this)} text='SEND' />
 				<p className='disclaimer'>Any personal information collected in this contact form is so that we can send you the information you have requested. It will not be used for any other reason.</p>
 			</form>
 		)
@@ -75,26 +91,22 @@ export default class Contact extends Component {
 
 		return (
 			<PopUp pageTitle='Contact Us'>
-				{ unsent && form}
-				{ sending && sendingCopy }
-				{ sent && !sentErr && sentCopy }
-				{ sent && sentErr && sendingErr }
+				{unsent && form}
+				{sending && sendingCopy}
+				{sent && !sentErr && sentCopy}
+				{sent && sentErr && sendingErr}
 			</PopUp>
 		)
 	}
 
-	checkOnBlurr () {
+	checkOnBlurr() {
 		if (this.state.sentAttempt === false) return
 		this.checkForm()
 	}
 
-	checkForm () {
-		let { name, email, subject, message } = this.refs
-
-		name = name.value.trim()
-		email = email.value.trim()
-		subject = subject.value.trim()
-		message = message.value.trim()
+	checkForm() {
+		const { formData } = this.state
+		let { name, email, subject, message } = formData
 
 		const validName = name.length > 0
 		const validEmail = validator.isEmail(email)
@@ -111,7 +123,7 @@ export default class Contact extends Component {
 		return validName && validEmail && validSubject && validMessage
 	}
 
-	sendMessage (e) {
+	sendMessage(e) {
 		e.preventDefault()
 
 		this.setState({ sentAttempt: true })
@@ -126,24 +138,22 @@ export default class Contact extends Component {
 			})
 
 			// get the form values
-			let { name, email, subject, message } = this.refs
-			name = name.value.trim()
-			email = email.value.trim()
-			subject = subject.value.trim()
-			message = message.value.trim()
+			const { formData } = this.state
+			let { name, email, subject, message } = formData
+			const { uid, login } = useCurrentUser(['uid', 'login'])
 
 			superagent
 				.post(app.settings.ws_conf.loc.SCRIPT_ROOT.u + app.settings.ws_conf.loc.SCRIPT__contact_form.u)
 				.type('form')
 				.send({
-							uid: (app.settings.isLoggedIn ? app.settings.curr_user.uid : 0),
-							login: (app.settings.isLoggedIn ? app.settings.curr_user.login : ''),
-							nam: name,
-							eml: email,
-							sub: subject,
-							mes: message
-						})
-				.end(function(err, res){
+					uid: (app.settings.isLoggedIn ? uid : 0),
+					login: (app.settings.isLoggedIn ? login : ''),
+					nam: name,
+					eml: email,
+					sub: subject,
+					mes: message
+				})
+				.end(function (err, res) {
 
 					if (err || !res.ok) {
 						console.log('something went wrong')
@@ -161,75 +171,6 @@ export default class Contact extends Component {
 						})
 					}
 				}.bind(this));
-						
-
-			// xhr({
-			// 	url: app.settings.ws_conf.loc.SCRIPT_ROOT.u + app.settings.ws_conf.loc.SCRIPT__contact_form.u,
-			// 	method: 'POST',
-			// 	body_: {
-			// 					uid: (app.settings.isLoggedIn ? app.settings.curr_user.uid : 0),
-			// 					login: (app.settings.isLoggedIn ? app.settings.curr_user.login : ''),
-			// 					nam: name,
-			// 					eml: email,
-			// 					sub: subject,
-			// 					mes: message
-			// 				},
-			// 	body: serialize_params({
-			// 					uid: (app.settings.isLoggedIn ? app.settings.curr_user.uid : 0),
-			// 					login: (app.settings.isLoggedIn ? app.settings.curr_user.login : ''),
-			// 					nam: name,
-			// 					eml: email,
-			// 					sub: subject,
-			// 					mes: message
-			// 				}),
-			// 	headers: {
-			// 			'Content-Type': 'application/x-www-form-urlencoded'
-			// 	}
-			// }, (err, resp, body) => {
-			// 	if (err) {
-			// 		console.log('something went wrong')
-			// 		this.setState({
-			// 			unsent: false,
-			// 			sending: false,
-			// 			sent: true,
-			// 			sentErr: true
-			// 		})
-			// 	} else {
-			// 		this.setState({
-			// 			unsent: false,
-			// 			sending: false,
-			// 			sent: true
-			// 		})
-			// 	}
-
-			// 	// console.log(body)
-			// })
 		}
 	}
-}
-
-// ------------------------------------------------------------------------------------------
-// Externalise later
-// ------------------------------------------------------------------------------------------
-export class FieldHolder extends Component {
-	constructor (props) {
-		super(props)
-	}
-	render () {
-		const { isValid, goodClasses, badClass } = this.props
-		const currentClasses = isValid ? goodClasses : goodClasses + ' ' + badClass
-		const props = objectAssign({}, this.props, { className: currentClasses })
-		return (
-			<div {...props} >
-				{ this.props.children }
-			</div>
-		)
-	}
-}
-
-FieldHolder.propTypes = {
-	children: React.PropTypes.any,
-	isValid: React.PropTypes.bool,
-	goodClasses: React.PropTypes.string.isRequired,
-	badClass: React.PropTypes.string.isRequired
 }

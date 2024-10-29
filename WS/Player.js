@@ -1,27 +1,33 @@
+const { STATUSES } = require("./util/constants");
+
 /**************************************************
 ** GAME PLAYER CLASS
 **************************************************/
-var Player = function(u, n, s) {
-	var uid = u,
-		status = s,
-		sockid,
-		socket,
-		mode,
-		name = n,
-		opp;
-
-	// Define which variables and methods can be accessed
-	return {
-		uid: uid,
-		status: status,
-		sockid: sockid,
-		socket: socket,
-		mode: mode,
-		name: name,
-		opp: opp
+class Player {
+	constructor(name, socket) {
+		this.uid = this._generateUID();
+		this._status = STATUSES.LOOKING;
+		this.sockid = socket.id;
+		this.socket = socket;
+		this.mode = null;
+		this.name = name;
+		this.opp = null;
 	}
-};
 
-// Export the Player class so you can use it in
-// other files by using require("Player").Player
+	get status() {
+		return this._status;
+	}
+
+	set status(s) {
+		if (s === STATUSES.LOOKING || s === STATUSES.PAIRED)
+			this._status = s;
+		else
+			throw new Error("Invalid status");
+	}
+
+	_generateUID = () => {
+		return parseInt(Math.ceil(Math.random() * Date.now()).toPrecision(16).toString().replace(".", ""));
+	}
+}
+
 exports.Player = Player;

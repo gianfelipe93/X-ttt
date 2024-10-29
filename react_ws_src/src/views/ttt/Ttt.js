@@ -1,102 +1,107 @@
-import React, { Component} from 'react'
-import { Link } from 'react-router'
+import React, { Component } from 'react'
 
-import SetName from './SetName'
 import SetGameType from './SetGameType'
 
 import GameMain from './GameMain'
+import { GAME_STEPS } from '../../util/constants'
+import Header from './Header'
+import useCurrentUser from '../../hooks/useCurrentUser'
+import { get } from 'lodash'
 
 export default class Ttt extends Component {
-
-	constructor (props) {
+	constructor(props) {
 		super(props)
 
 		this.state = {
-			game_step: this.set_game_step()
+			game_step: this.set_game_step(),
+			username: '',
+			game_type: null
+		}
+
+		this.saveUserName = this.saveUserName.bind(this)
+		this.saveGameType = this.saveGameType.bind(this)
+		this.gameEnd = this.gameEnd.bind(this)
+		this.set_game_step = this.set_game_step.bind(this)
+	}
+
+	renderGameComponent(game_step) {
+		if (game_step === GAME_STEPS.SET_GAME_TYPE) {
+			return <SetGameType onSetType={this.saveGameType} />
+		} else if (game_step === GAME_STEPS.START_GAME) {
+			return <GameMain game_type={this.state.game_type} onEndGame={this.gameEnd} />
+		} else {
+			return null
 		}
 	}
 
-//	------------------------	------------------------	------------------------
-
-	render () {
-
-		const {game_step} = this.state
-
-		console.log(game_step)
+	render() {
+		const { game_step } = this.state
+		const { name } = useCurrentUser(['name'])
 
 		return (
 			<section id='TTT_game'>
 				<div id='page-container'>
-					{game_step == 'set_name' && <SetName 
-														onSetName={this.saveUserName.bind(this)} 
-												/>}
-
-					{game_step != 'set_name' && 
-						<div>
-							<h2>Welcome, {app.settings.curr_user.name}</h2>
-						</div>
-					}
-
-					{game_step == 'set_game_type' && <SetGameType 
-														onSetType={this.saveGameType.bind(this)} 
-													/>}
-					{game_step == 'start_game' && <GameMain 
-														game_type={this.state.game_type}
-														onEndGame={this.gameEnd.bind(this)} 
-													/>}
-
+					<Header game_step={game_step} userName={name} saveUserName={this.saveUserName} />
+					{this.renderGameComponent(game_step)}
 				</div>
 			</section>
 		)
 	}
 
-//	------------------------	------------------------	------------------------
+	updateState(key, value) {
+		let tempState = this.state
+		tempState[key] = value
 
-	saveUserName (n) {
+		this.setState(tempState)
+	}
+
+	//	------------------------	------------------------	------------------------
+
+	saveUserName(name) {
+		// eslint-disable-next-line no-undef
 		app.settings.curr_user = {}
-		app.settings.curr_user.name = n
+		// eslint-disable-next-line no-undef
+		app.settings.curr_user.name = name
 
+		this.updateState('username', name)
 		this.upd_game_step()
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
-	saveGameType (t) {
-		this.state.game_type = t
-
+	saveGameType(type) {
+		this.updateState('game_type', type)
 		this.upd_game_step()
+
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
-	gameEnd (t) {
-		this.state.game_type = null
-
-		this.upd_game_step()
+	gameEnd() {
+		this.updateState('game_type', null)
+		window.location = '/ttt'
 	}
 
-//	------------------------	------------------------	------------------------
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
-	upd_game_step () {
-
-		this.setState({
-			game_step: this.set_game_step()
-		})
+	upd_game_step() {
+		this.updateState('game_step', this.set_game_step())
 	}
 
-//	------------------------	------------------------	------------------------
+	//	------------------------	------------------------	------------------------
 
-	set_game_step () {
+	set_game_step() {
+		const { name, valid } = useCurrentUser(['name'])
+		const game_type = get(this.state, 'game_type', null)
 
-		if (!app.settings.curr_user || !app.settings.curr_user.name)
-			return 'set_name'
-		else if (!this.state.game_type)
-			return 'set_game_type'
+		if (!valid || !name)
+			return GAME_STEPS.SET_NAME
+		else if (!game_type)
+			return GAME_STEPS.SET_GAME_TYPE
 		else
-			return 'start_game'
+			return GAME_STEPS.START_GAME
 	}
-
 }
 
 //	------------------------	------------------------	------------------------
@@ -106,5 +111,5 @@ Ttt.propTypes = {
 }
 
 Ttt.contextTypes = {
-  router: React.PropTypes.object.isRequired
+	router: React.PropTypes.object.isRequired
 }
